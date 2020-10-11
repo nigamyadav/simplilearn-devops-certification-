@@ -1,0 +1,41 @@
+pipeline {
+ environment {
+	registry = "120894/simplilearn-devops-certification"
+	registryCrendential = 'nigam@120894'
+}
+agent any
+stages {
+	stage('Building image') {
+	steps{
+	scripts {
+		dockerImage = docker.build registry + ":$BUILD_NUMBER"
+
+		}
+}
+}
+ stage('deploy Image') {
+steps{
+script {
+docker.withRegistry('','nigam@120894'){
+dockerImage.push()
+}
+}
+
+}
+}
+
+stage('remove Image') {
+steps{
+sh docker rmi $registry:$BUILD_NUMBER"
+}
+}
+}
+}
+node {
+	stage('Execute Image'){
+	def customImage = docker.build("120894/simplilearn-devops-certification:${env.BUILD_NUMBER}")
+		customImage.inside {
+	sh 'echo This is the code executing inside the container.'
+}
+}
+}
